@@ -63,7 +63,7 @@
       radial-gradient(circle at 86% 18%, rgba(var(--accent-rgb), 0.12), transparent 34%),
       radial-gradient(circle at 65% 86%, rgba(var(--accent-rgb), 0.09), transparent 40%),
       linear-gradient(180deg, rgba(2, 6, 23, 0.16), rgba(2, 6, 23, 0.55));
-    animation: bg-shift 28s ease-in-out infinite alternate;
+    animation: none;
   }
 
   .ambient-glow::before {
@@ -73,7 +73,7 @@
     background: radial-gradient(circle at 22% 28%, rgba(34, 211, 238, 0.07), transparent 34%),
       radial-gradient(circle at 78% 72%, rgba(59, 130, 246, 0.07), transparent 36%);
     filter: blur(28px);
-    animation: haze-drift 24s ease-in-out infinite;
+    animation: none;
   }
 
   .ambient-glow::after {
@@ -84,7 +84,7 @@
     background-image: radial-gradient(rgba(148, 163, 184, 0.35) 0.55px, transparent 0.55px);
     background-size: 2px 2px;
     mix-blend-mode: soft-light;
-    animation: noise-drift 16s linear infinite;
+    animation: none;
   }
 
 
