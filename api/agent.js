@@ -15,11 +15,50 @@ const configuredApiKeys = (
 const SYSTEM_PROMPT =
   'You are Dattamsha Agent v2.0, an HR Workforce Intelligence AI for enterprise teams. ' +
   'Analyze workforce scenarios with focus on attrition risk, workforce engagement, hiring pipelines, productivity, and burnout risk. ' +
-  'Return concise structured output with: Findings, Key Drivers, Recommended Actions, KPI Tracking.';
+  'Return plain text only (no markdown, no **, no #, no bullet symbols). ' +
+  'Use clear section labels in this order: Executive Summary, Findings, Key Drivers, Recommended Actions, KPI Tracking.';
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+function cleanMarkdown(text) {
+  return text
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/\*\*/g, '')
+    .replace(/^[\s>*#-]+/gm, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+function formatAgentResponse(rawText) {
+  const compact = rawText.trim();
+  const jsonCandidate = compact.replace(/^```json\s*/i, '').replace(/```$/i, '').trim();
+  try {
+    const parsed = JSON.parse(jsonCandidate);
+    const findings = String(parsed.findings || '').trim();
+    const keyDrivers = String(parsed.key_drivers || '').trim();
+    const actions = String(parsed.recommended_actions || '').trim();
+    const kpis = String(parsed.kpi_tracking || '').trim();
+    if (findings || keyDrivers || actions || kpis) {
+      return [
+        `Findings: ${findings || 'Not available.'}`,
+        `Key Drivers: ${keyDrivers || 'Not available.'}`,
+        `Recommended Actions: ${actions || 'Not available.'}`,
+        `KPI Tracking: ${kpis || 'Not available.'}`,
+      ].join('\n');
+    }
+  } catch {
+    // Non-JSON fallback below.
+  }
+
+  const normalized = cleanMarkdown(compact);
+  if (/^(Executive Summary:|Findings:|Key Drivers:|Recommended Actions:|KPI Tracking:)/i.test(normalized)) {
+    return normalized;
+  }
+  return `Findings: ${normalized}`;
+}
+
 async function callGeminiWithModel(model, command, apiKey) {
+  const longMode = /comprehensive|detailed|blueprint|roadmap|full plan|deep/i.test(command) || command.length > 220;
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
   const payload = {
     contents: [
@@ -29,9 +68,9 @@ async function callGeminiWithModel(model, command, apiKey) {
       },
     ],
     generationConfig: {
-      temperature: 0.4,
-      topP: 0.9,
-      maxOutputTokens: 700,
+      temperature: 0.3,
+      topP: 0.85,
+      maxOutputTokens: longMode ? 2600 : 1100,
     },
   };
 
@@ -66,7 +105,7 @@ async function callGeminiWithModel(model, command, apiKey) {
     throw new Error('Gemini returned an empty response.');
   }
 
-  return text;
+  return formatAgentResponse(text);
 }
 
 async function callGeminiWithFallback(command) {
@@ -125,4 +164,3 @@ export default async function handler(req, res) {
     return res.status(status).json({ error: message });
   }
 }
-
