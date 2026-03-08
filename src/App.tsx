@@ -348,6 +348,45 @@ function App() {
     setMenuOpen(false);
   };
 
+  const renderTerminalLine = (line: string, key: string) => {
+    const trimmed = line.trim();
+    const sectionMatch = trimmed.match(
+      /^(Executive Summary|Findings|Key Drivers|Recommended Actions|KPI Tracking)\s*:\s*(.*)$/i,
+    );
+
+    if (sectionMatch) {
+      const [, label, value] = sectionMatch;
+      return (
+        <p key={key} className="terminal-line-section whitespace-pre-wrap">
+          <span className="terminal-line-label">{label}:</span>{' '}
+          <span className="terminal-line-value">{value}</span>
+        </p>
+      );
+    }
+
+    if (trimmed.startsWith('admin@dattamsha:~$')) {
+      return (
+        <p key={key} className="terminal-line-command whitespace-pre-wrap">
+          {line}
+        </p>
+      );
+    }
+
+    if (trimmed.startsWith('Error:')) {
+      return (
+        <p key={key} className="terminal-line-error whitespace-pre-wrap">
+          {line}
+        </p>
+      );
+    }
+
+    return (
+      <p key={key} className="whitespace-pre-wrap">
+        {line}
+      </p>
+    );
+  };
+
   useEffect(() => {
     const ids = navLinks.map((item) => item.href.slice(1));
     const sections = ids
@@ -867,14 +906,10 @@ function App() {
 
             <div className="terminal-body">
               <div className="space-y-2 text-left font-mono text-lg leading-relaxed text-slate-200">
-                {log.map((line, index) => (
-                  <p key={`${line}-${index}`} className="whitespace-pre-wrap">
-                    {line}
-                  </p>
-                ))}
+                {log.map((line, index) => renderTerminalLine(line, `${line}-${index}`))}
                 {isStreaming && (
-                  <p className="whitespace-pre-wrap text-cyan-100">
-                    {streamingText}
+                  <p className="terminal-line-stream whitespace-pre-wrap text-cyan-100">
+                    {streamingText || 'Running analysis...'}
                     <span className="terminal-cursor">▋</span>
                   </p>
                 )}

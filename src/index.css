@@ -1026,6 +1026,35 @@
     box-shadow: 0 20px 48px rgba(1, 8, 24, 0.48);
   }
 
+  .terminal-line-section {
+    margin-top: 0.1rem;
+    border-left: 2px solid rgba(125, 211, 252, 0.45);
+    padding-left: 0.55rem;
+  }
+
+  .terminal-line-label {
+    color: #a5f3fc;
+    font-weight: 700;
+  }
+
+  .terminal-line-value {
+    color: #e2edf9;
+  }
+
+  .terminal-line-command {
+    color: #7dd3fc;
+    font-weight: 600;
+  }
+
+  .terminal-line-error {
+    color: #fda4af;
+    font-weight: 600;
+  }
+
+  .terminal-line-stream {
+    color: #c6f4ff;
+  }
+
   .terminal-head {
     background: linear-gradient(180deg, rgba(47, 62, 91, 0.5), rgba(34, 49, 76, 0.4));
   }
