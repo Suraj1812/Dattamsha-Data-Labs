@@ -8,7 +8,7 @@ import {
   ChevronLeft,
   ChevronRight,
   DatabaseZap,
-  Globe,
+  Globe as GlobeIcon,
   Linkedin,
   LineChart,
   Mail,
@@ -37,7 +37,7 @@ type CompanyFact = {
   value: string;
   href?: string;
   external?: boolean;
-  icon: typeof Globe;
+  icon: typeof GlobeIcon;
 };
 
 const useCases = [
@@ -125,7 +125,7 @@ const companyFacts: CompanyFact[] = [
     value: 'https://www.dattamsha.co.in',
     href: 'https://www.dattamsha.co.in',
     external: true,
-    icon: Globe,
+    icon: GlobeIcon,
   },
   { label: 'Phone', value: '+91 9013333243', href: 'tel:+919013333243', icon: Phone },
   {
@@ -1086,7 +1086,7 @@ function App() {
                   <Phone size={18} /> +91 9013333243
                 </a>
                 <a href="https://www.dattamsha.co.in" target="_blank" rel="noreferrer" className="contact-card">
-                  <Globe size={18} /> dattamsha.co.in
+                  <GlobeIcon size={18} /> dattamsha.co.in
                 </a>
                 <a
                   href="https://www.linkedin.com/company/dattamsha-data-labs/"
