@@ -917,14 +917,14 @@ function App() {
 
               <form
                 onSubmit={handleDemoSubmit}
-                className="mt-6 flex flex-col items-stretch gap-3 border-t border-white/10 pt-5 sm:flex-row sm:items-center"
+                className="mt-6 flex items-center gap-3 border-t border-white/10 pt-5"
               >
-                <span className="font-mono text-cyan-300 sm:whitespace-nowrap">admin@dattamsha:~$</span>
+                <span className="font-mono whitespace-nowrap text-cyan-300">admin@dattamsha:~$</span>
                 <input
                   value={command}
                   onChange={(event) => setCommand(event.target.value)}
                   placeholder="Type command..."
-                  className="terminal-input w-full flex-1"
+                  className="terminal-input min-w-0 w-full flex-1"
                   disabled={isStreaming}
                 />
                 <button type="submit" className="terminal-send" disabled={isStreaming}>
