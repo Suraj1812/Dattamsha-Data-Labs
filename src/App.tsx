@@ -610,11 +610,11 @@ function App() {
 
   return (
     <div className="site-shell text-slate-100">
-      <div className="opacity-35">
+      <div className="opacity-24">
         <ThreeBackground />
       </div>
-      <ShapeLandingBackground className="fixed inset-0 z-[-3] opacity-32" />
-      <div className="ambient-glow" style={{ opacity: 0.38 }} />
+      <ShapeLandingBackground className="fixed inset-0 z-[-3] opacity-20" />
+      <div className="ambient-glow" style={{ opacity: 0.24 }} />
       <div className="scroll-progress-track">
         <div
           className="scroll-progress-bar"
