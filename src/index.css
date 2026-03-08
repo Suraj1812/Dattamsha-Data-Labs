@@ -612,15 +612,20 @@
   .next-step-layout {
     display: grid;
     grid-template-columns: 1.2fr 0.8fr;
-    gap: 1rem;
+    gap: clamp(0.9rem, 2vw, 1.4rem);
     align-items: end;
+  }
+
+  .next-step-main,
+  .next-step-cta {
+    min-width: 0;
   }
 
   .next-step-cta {
     border: 1px solid rgba(148, 163, 184, 0.28);
     background: rgba(10, 25, 47, 0.55);
     border-radius: 1rem;
-    padding: 1rem;
+    padding: clamp(0.95rem, 2.1vw, 1.2rem);
     animation: next-step-card-float 5.2s ease-in-out infinite;
   }
 
@@ -662,12 +667,19 @@
   }
 
   .next-step-actions {
-    flex-wrap: nowrap;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 0.65rem;
   }
 
   .next-step-actions .btn-primary,
   .next-step-actions .btn-secondary {
-    white-space: nowrap;
+    flex: 1 1 15rem;
+    min-width: 0;
+    white-space: normal;
+    text-align: center;
+    justify-content: center;
   }
 
   .pulse-glow {
@@ -1502,7 +1514,8 @@
 
   .next-step-layout {
     grid-template-columns: 1fr;
-    gap: 0.75rem;
+    gap: 0.85rem;
+    align-items: stretch;
   }
 
   .footer-nav {
@@ -1544,7 +1557,19 @@
 
   .next-step-actions .btn-primary,
   .next-step-actions .btn-secondary {
-    width: auto;
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .next-step-title {
+    font-size: clamp(1.7rem, 7vw, 2.15rem);
+    line-height: 1.15;
+  }
+
+  .next-step-chip {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
   }
 
   .terminal-input {
