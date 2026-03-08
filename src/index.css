@@ -246,8 +246,39 @@
     transform: translateY(0);
   }
 
+  .reveal-section.in-view > * {
+    animation: section-rise 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .reveal-section.in-view > *:nth-child(2) {
+    animation-delay: 90ms;
+  }
+
+  .reveal-section.in-view > *:nth-child(3) {
+    animation-delay: 170ms;
+  }
+
   .reveal-section.in-view .stagger-item {
     animation: card-rise 520ms ease both;
+  }
+
+  .reveal-section.in-view .surface-card,
+  .reveal-section.in-view .mini-card,
+  .reveal-section.in-view .director-card,
+  .reveal-section.in-view .founder-card,
+  .reveal-section.in-view .contact-card,
+  .reveal-section.in-view .kpi-box {
+    animation: alive-breathe 7.5s ease-in-out infinite;
+    animation-delay: 0.45s;
+  }
+
+  .reveal-section.in-view .surface-card:hover,
+  .reveal-section.in-view .mini-card:hover,
+  .reveal-section.in-view .director-card:hover,
+  .reveal-section.in-view .founder-card:hover,
+  .reveal-section.in-view .contact-card:hover,
+  .reveal-section.in-view .kpi-box:hover {
+    animation-play-state: paused;
   }
 
   .mobile-toggle {
@@ -487,6 +518,118 @@
   .result-panel {
     background: linear-gradient(135deg, rgba(8, 20, 40, 0.84) 0%, rgba(10, 45, 77, 0.72) 100%);
     box-shadow: 0 18px 44px rgba(1, 11, 30, 0.44);
+  }
+
+  .how-flow {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.85rem;
+  }
+
+  .how-step-wrap {
+    min-width: 0;
+  }
+
+  .how-card {
+    min-height: 100%;
+    position: relative;
+    transition: border-color 260ms ease, box-shadow 260ms ease, transform 260ms ease;
+  }
+
+  .how-card.active {
+    border-color: rgba(125, 211, 252, 0.62);
+    box-shadow: 0 14px 34px rgba(7, 49, 86, 0.28);
+    transform: translateY(-1px);
+  }
+
+  .how-card.active::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    border: 1px solid rgba(125, 211, 252, 0.28);
+    animation: how-glow 1.2s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  .how-step-label {
+    margin: 0 0 0.55rem;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: #86dffb;
+    font-weight: 700;
+  }
+
+
+  .compare-point {
+    border-radius: 0.65rem;
+    padding: 0.3rem 0.45rem;
+    transition: background-color 220ms ease, color 220ms ease, transform 220ms ease;
+  }
+
+  .compare-point.active {
+    transform: translateX(3px);
+    color: #f8fbff;
+    animation: compare-pulse 1.15s ease-in-out infinite;
+  }
+
+  .compare-point.active.traditional {
+    background: rgba(251, 113, 133, 0.14);
+  }
+
+  .compare-point.active.autonomous {
+    background: rgba(16, 185, 129, 0.14);
+  }
+
+  .next-step-shell {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .next-step-shell::before {
+    content: '';
+    position: absolute;
+    inset: -20% -10%;
+    background: linear-gradient(
+      120deg,
+      rgba(34, 211, 238, 0.04) 0%,
+      rgba(56, 189, 248, 0.2) 28%,
+      rgba(45, 212, 191, 0.08) 52%,
+      rgba(56, 189, 248, 0.2) 76%,
+      rgba(34, 211, 238, 0.04) 100%
+    );
+    transform: translateX(-30%);
+    animation: next-step-sweep 7.2s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  .next-step-shell > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .next-step-title {
+    animation: next-step-title-glow 2.8s ease-in-out infinite;
+  }
+
+  .next-step-btn-primary {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .next-step-btn-primary::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    border: 1px solid rgba(186, 230, 253, 0.5);
+    animation: next-step-ring 2.1s ease-out infinite;
+    pointer-events: none;
+  }
+
+  .next-step-btn-secondary {
+    animation: next-step-soft-float 3.5s ease-in-out infinite;
   }
 
   .pulse-glow {
@@ -1086,6 +1229,93 @@
     }
   }
 
+  @keyframes section-rise {
+    from {
+      opacity: 0;
+      transform: translateY(22px) scale(0.99);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes alive-breathe {
+    0%,
+    100% {
+      transform: translateY(0);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 14px 30px rgba(1, 9, 25, 0.34);
+    }
+    50% {
+      transform: translateY(-4px);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 20px 38px rgba(1, 16, 35, 0.4);
+    }
+  }
+
+  @keyframes how-glow {
+    0%,
+    100% {
+      opacity: 0.35;
+    }
+    50% {
+      opacity: 0.85;
+    }
+  }
+
+  @keyframes compare-pulse {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgba(148, 163, 184, 0);
+    }
+    50% {
+      box-shadow: 0 0 0 6px rgba(148, 163, 184, 0.08);
+    }
+  }
+
+  @keyframes next-step-sweep {
+    0%,
+    100% {
+      transform: translateX(-34%);
+      opacity: 0.38;
+    }
+    50% {
+      transform: translateX(28%);
+      opacity: 0.72;
+    }
+  }
+
+  @keyframes next-step-title-glow {
+    0%,
+    100% {
+      text-shadow: 0 0 0 rgba(56, 189, 248, 0);
+    }
+    50% {
+      text-shadow: 0 0 18px rgba(56, 189, 248, 0.45);
+    }
+  }
+
+  @keyframes next-step-ring {
+    0% {
+      transform: scale(0.96);
+      opacity: 0.6;
+    }
+    70%,
+    100% {
+      transform: scale(1.08);
+      opacity: 0;
+    }
+  }
+
+  @keyframes next-step-soft-float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-2px);
+    }
+  }
+
 }
 
 @media (max-width: 768px) {
@@ -1149,18 +1379,25 @@
     gap: 0.7rem;
   }
 
+  .how-flow {
+    grid-template-columns: 1fr;
+    gap: 0.55rem;
+  }
+
+  .result-panel.section-frame {
+    padding: 1rem;
+  }
+
+  .carousel-slide {
+    padding: 0;
+  }
+
+  .carousel-track .surface-card {
+    padding: 0.9rem;
+  }
+
   .carousel-arrow {
-    width: 2.2rem;
-    height: 2.2rem;
-  }
-
-  .carousel-arrow.left {
-    justify-self: start;
-  }
-
-  .carousel-arrow.right {
-    justify-self: end;
-    margin-top: -2.9rem;
+    display: none;
   }
 
   .contact-grid {
@@ -1204,6 +1441,7 @@
     gap: 0.6rem;
   }
 }
+
 
 @media (max-width: 640px) {
   .btn-primary,

@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import {
   ArrowRight,
   BrainCircuit,
@@ -19,6 +19,7 @@ import {
   UsersRound,
   X,
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import ThreeBackground from './components/ThreeBackground';
 
 const navLinks = [
@@ -76,43 +77,45 @@ const demoSuggestions = [
   'Detect burnout risk across customer support teams',
 ];
 
-const overviewText =
-  'We bridge the Data, Insights, Action, and Behavior divides with a scalable, productized platform, turning HR from a cost center into a continuous driver of P&L value.';
-
-const strategySteps = [
+const platformPillars = [
   {
-    step: 'STEP 1',
-    title: 'The Data OS',
-    problem: 'The Data Divide. Siloed HR, ATS, and Payroll data.',
-    solution:
-      'Unified Data Fabric. A productized data engineering layer with guaranteed-SLA connectors to establish a single source of truth in weeks.',
-    outcome: '70% reduction in custom data engineering costs.',
+    title: 'Unified Data Fabric',
+    copy: 'Integrate HRIS, payroll, ATS, LMS, and engagement systems into one governed data layer.',
   },
   {
-    step: 'STEP 2',
-    title: 'The Financial Brain',
-    problem: 'The Insights Divide. Descriptive, non-financially linked reports.',
-    solution:
-      'P&L-Linked Insight Modules. Predictive analytics (e.g., Attrition Cost Modeler) that integrate with finance systems to show real ROI.',
-    outcome: 'Justify HR initiatives in the language of the CFO.',
+    title: 'Agentic AI Systems',
+    copy: 'AI assistants automate analysis, reporting, and repetitive HR workflows for faster execution.',
   },
   {
-    step: 'STEP 3',
-    title: 'The Agentic Co-pilot',
-    problem: 'The Action Divide. Insights require manual analyst queries and execution.',
-    solution:
-      'Agentic AI Layer. A premium suite of AI agents (Analyst, Compliance, Workflow) that execute multi-step tasks across systems autonomously.',
-    outcome: 'Move from reporting to automated action execution.',
-  },
-  {
-    step: 'STEP 4',
-    title: 'The Nudge Engine',
-    problem: 'The Behavior Gap. Insights fail to drive human behavioral change.',
-    solution:
-      'Behavioral Nudge Engine. Contextual, science-backed micro-interventions delivered at the optimal time to drive measurable habit change and adoption.',
-    outcome: 'Instant "Aha!" moment for PLG; sustained positive colleague experiences.',
+    title: 'HR → Business Impact',
+    copy: 'Connect workforce insights directly to revenue, cost, and performance outcomes.',
   },
 ];
+
+const flowContainer = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.14,
+      delayChildren: 0.12,
+    },
+  },
+};
+
+const flowItem = {
+  hidden: { opacity: 0, y: 24, scale: 0.98 },
+  show: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      type: 'spring',
+      stiffness: 120,
+      damping: 16,
+      mass: 0.8,
+    },
+  },
+};
 
 const companyFacts: CompanyFact[] = [
   {
@@ -211,6 +214,25 @@ function useCountUp(target: number, duration = 1200) {
   return value;
 }
 
+function useTriggeredCountUp(target: number, start: boolean, duration = 1200) {
+  const [value, setValue] = useState(0);
+
+  useEffect(() => {
+    if (!start) return;
+    let raf = 0;
+    const begin = performance.now();
+    const tick = (now: number) => {
+      const progress = Math.min((now - begin) / duration, 1);
+      setValue(Math.floor(target * progress));
+      if (progress < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, start, duration]);
+
+  return value;
+}
+
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [navCondensed, setNavCondensed] = useState(false);
@@ -226,8 +248,10 @@ function App() {
   const [streamingText, setStreamingText] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [activeUseCaseIndex, setActiveUseCaseIndex] = useState(0);
-  const [activeStepIndex, setActiveStepIndex] = useState(0);
+  const [activeHowIndex, setActiveHowIndex] = useState(0);
+  const [activeComparisonIndex, setActiveComparisonIndex] = useState(0);
   const [pauseUseCaseAuto, setPauseUseCaseAuto] = useState(false);
+  const [startImpactCount, setStartImpactCount] = useState(false);
   const [contactName, setContactName] = useState('');
   const [contactEmail, setContactEmail] = useState('');
   const [contactCompany, setContactCompany] = useState('');
@@ -237,6 +261,11 @@ function App() {
   const coverage = useCountUp(94, 1300);
   const signals = useCountUp(320, 1500);
   const lagReduction = useCountUp(27, 1200);
+  const impactRef = useRef<HTMLDivElement | null>(null);
+  const impactMin = useTriggeredCountUp(15, startImpactCount, 950);
+  const impactMax = useTriggeredCountUp(25, startImpactCount, 1250);
+  const impactOps = useTriggeredCountUp(50, startImpactCount, 1150);
+  const impactCompliance = useTriggeredCountUp(100, startImpactCount, 1450);
 
   const runCommand = (input: string) => {
     const trimmed = input.trim();
@@ -368,9 +397,33 @@ function App() {
 
   useEffect(() => {
     const timer = window.setInterval(() => {
-      setActiveStepIndex((prev) => (prev + 1) % strategySteps.length);
-    }, 3000);
+      setActiveHowIndex((prev) => (prev + 1) % platformPillars.length);
+    }, 2300);
     return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setActiveComparisonIndex((prev) => (prev + 1) % 3);
+    }, 2200);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!impactRef.current) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setStartImpactCount(true);
+            observer.disconnect();
+          }
+        });
+      },
+      { threshold: 0.3 },
+    );
+    observer.observe(impactRef.current);
+    return () => observer.disconnect();
   }, []);
 
   return (
@@ -442,12 +495,23 @@ function App() {
         <section id="overview" className="reveal-section grid gap-14 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
           <div>
             <p className="section-kicker">Autonomous Workforce Intelligence</p>
-            <h1 className="hero-title">Turn People Data into Profit-Driving Decisions.</h1>
+            <h1 className="hero-title">Building Autonomous HR Systems with AI & Data.</h1>
             <p className="section-copy max-w-2xl">
-              Dattamsha Data Labs unifies fragmented HR systems into one AI-native platform that
-              predicts risk, recommends action, and helps leadership teams drive measurable business
-              impact from people strategy.
+              Dattamsha Data Labs helps organizations unify people data, automate HR decisions, and
+              connect workforce strategy directly to business outcomes.
             </p>
+            <p className="section-copy mt-2 max-w-2xl">
+              From fragmented HR tools to one intelligent operating layer, we enable faster, smarter,
+              and measurable people decisions.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <a href="#solutions" className="btn-primary">
+                Explore Platform
+              </a>
+              <a href="#contact" className="btn-secondary">
+                Book Demo
+              </a>
+            </div>
             <div className="mt-6 flex flex-wrap gap-2">
               <span className="rounded-full border border-cyan-300/35 bg-cyan-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-cyan-100">
                 Live Signals
@@ -483,12 +547,108 @@ function App() {
               </p>
             </div>
           </div>
+
+          <div ref={impactRef} className="lg:col-span-2">
+            <div className="section-frame rounded-[24px] border border-white/15 bg-slate-900/55">
+              <div className="flex items-end justify-between gap-3">
+                <p className="section-kicker !mb-0">Impact Metrics</p>
+                <p className="text-xs uppercase tracking-[0.12em] text-slate-400">Business Outcomes</p>
+              </div>
+              <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                <div className="kpi-box text-center">
+                  <p className="metric-number font-display text-3xl text-cyan-200 sm:text-4xl">{impactMin}-{impactMax}%</p>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-300">Increase in employee engagement</p>
+                </div>
+                <div className="kpi-box text-center">
+                  <p className="metric-number font-display text-3xl text-cyan-200 sm:text-4xl">{impactOps}%</p>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-300">Reduction in HR operations effort</p>
+                </div>
+                <div className="kpi-box text-center">
+                  <p className="metric-number font-display text-3xl text-cyan-200 sm:text-4xl">{impactCompliance}%</p>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-300">Compliance workflow automation</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="section-block reveal-section">
+          <div className="mx-auto max-w-4xl text-center">
+            <p className="section-kicker">How It Works</p>
+            <h2 className="section-title">Three Engines, One Autonomous HR System</h2>
+          </div>
+          <motion.div
+            className="how-flow mt-8"
+            variants={flowContainer}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.28 }}
+          >
+            {platformPillars.map((pillar, index) => (
+              <motion.div key={pillar.title} className="how-step-wrap" variants={flowItem}>
+                <motion.article
+                  className={index === activeHowIndex ? 'surface-card how-card active' : 'surface-card how-card'}
+                  whileHover={{ y: -2 }}
+                  transition={{ type: 'spring', stiffness: 240, damping: 24 }}
+                >
+                  <p className="how-step-label">Step {index + 1}</p>
+                  <h3 className="font-display text-2xl text-white">{pillar.title}</h3>
+                  <p className="mt-3 text-sm leading-relaxed text-slate-300">{pillar.copy}</p>
+                </motion.article>
+              </motion.div>
+            ))}
+          </motion.div>
+        </section>
+
+        <section className="section-block reveal-section">
+          <div className="mx-auto max-w-4xl text-center">
+            <p className="section-kicker">Comparison</p>
+            <h2 className="section-title">Traditional HR vs Autonomous HR</h2>
+          </div>
+          <div className="mt-8 grid gap-4 md:grid-cols-2">
+            <motion.div
+              className="surface-card border border-rose-300/25 bg-rose-900/10"
+              whileHover={{ y: -3 }}
+              transition={{ type: 'spring', stiffness: 240, damping: 22 }}
+            >
+              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-rose-200">Traditional HR</p>
+              <ul className="mt-4 space-y-2 text-sm text-slate-300">
+                <li className={activeComparisonIndex === 0 ? 'compare-point active traditional' : 'compare-point'}>
+                  • Siloed tools and delayed reporting
+                </li>
+                <li className={activeComparisonIndex === 1 ? 'compare-point active traditional' : 'compare-point'}>
+                  • Manual analysis and reactive decisions
+                </li>
+                <li className={activeComparisonIndex === 2 ? 'compare-point active traditional' : 'compare-point'}>
+                  • Limited visibility into business impact
+                </li>
+              </ul>
+            </motion.div>
+            <motion.div
+              className="surface-card border border-emerald-300/25 bg-emerald-900/10"
+              whileHover={{ y: -3 }}
+              transition={{ type: 'spring', stiffness: 240, damping: 22 }}
+            >
+              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-emerald-200">Autonomous HR</p>
+              <ul className="mt-4 space-y-2 text-sm text-slate-300">
+                <li className={activeComparisonIndex === 0 ? 'compare-point active autonomous' : 'compare-point'}>
+                  • Unified workforce data in one intelligence layer
+                </li>
+                <li className={activeComparisonIndex === 1 ? 'compare-point active autonomous' : 'compare-point'}>
+                  • Agentic AI for continuous analysis and action
+                </li>
+                <li className={activeComparisonIndex === 2 ? 'compare-point active autonomous' : 'compare-point'}>
+                  • HR initiatives linked to revenue and performance
+                </li>
+              </ul>
+            </motion.div>
+          </div>
         </section>
 
         <section id="about" className="section-block reveal-section">
           <div className="section-frame grid gap-8 rounded-[30px] border border-white/15 bg-slate-900/65 lg:grid-cols-[1.05fr_0.95fr]">
             <div>
-              <p className="section-kicker">About Dattamsha</p>
+              <p className="section-kicker">Founder Story + Vision</p>
               <h2 className="section-title">CEO-led. Employee-driven.</h2>
               <p className="section-copy">
                 Dattamsha Data Labs is built by leaders and practitioners who combine HR analytics,
@@ -606,15 +766,17 @@ function App() {
                 >
                   {useCases.map((item) => (
                     <div key={item.key} className="carousel-slide">
-                      <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-                        <div>
-                          <h3 className="font-display text-4xl text-white">{item.title}</h3>
-                          <p className="mt-4 max-w-xl text-slate-300">{item.blurb}</p>
+                      <div className="grid min-w-0 gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+                        <div className="min-w-0">
+                          <h3 className="font-display text-2xl text-white sm:text-3xl lg:text-4xl">{item.title}</h3>
+                          <p className="mt-4 max-w-none break-words text-sm leading-relaxed text-slate-300 sm:text-base">
+                            {item.blurb}
+                          </p>
                           <p className="mt-6 inline-flex rounded-full border border-emerald-300/40 bg-emerald-400/10 px-4 py-2 text-sm text-emerald-200">
                             {item.metric}
                           </p>
                         </div>
-                        <div className="surface-card pulse-glow">
+                        <div className="surface-card pulse-glow min-w-0">
                           <p className="text-sm uppercase tracking-[0.2em] text-cyan-200">System Response</p>
                           <ul className="mt-4 space-y-3 text-slate-200">
                             <li className="flex items-center gap-2">
@@ -728,42 +890,20 @@ function App() {
         </section>
 
         <section className="section-block reveal-section">
-          <div className="mx-auto max-w-4xl text-center">
-            <p className="section-kicker">Overview</p>
-            <h2 className="section-title">4-Step Strategy</h2>
-            <p className="section-copy mx-auto max-w-4xl">
-              Bridge Data, Insights, Action, and Behavior to make HR a P&L driver.
+          <div className="section-frame next-step-shell rounded-[30px] border border-cyan-300/25 bg-cyan-400/10 text-center">
+            <p className="section-kicker">Next Step</p>
+            <h2 className="section-title next-step-title">Start Building Autonomous HR.</h2>
+            <p className="section-copy mx-auto max-w-3xl">
+              Move from fragmented systems and manual reporting to an AI-native workforce intelligence platform.
             </p>
-          </div>
-
-          <div className="strategy-ladder mx-auto mt-12 max-w-6xl">
-            <div className="ladder-spine" />
-            {strategySteps.map((item, idx) => (
-              <article
-                key={item.step}
-                className={
-                  strategySteps[activeStepIndex].step === item.step
-                    ? `strategy-step ${idx % 2 === 0 ? 'left' : 'right'} stagger-item active-strategy`
-                    : `strategy-step ${idx % 2 === 0 ? 'left' : 'right'} stagger-item`
-                }
-                style={{ animationDelay: `${idx * 120}ms` }}
-              >
-                <div className="step-node" />
-                <div className="surface-card step-content text-left">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300">{item.step}</p>
-                  <h3 className="mt-2 font-display text-2xl text-white">{item.title}</h3>
-                  <p className="mt-4 text-sm text-slate-300">
-                    <span className="font-semibold text-slate-100">Problem:</span> {item.problem}
-                  </p>
-                  <p className="mt-3 text-sm text-slate-300">
-                    <span className="font-semibold text-slate-100">Solution:</span> {item.solution}
-                  </p>
-                  <p className="mt-3 rounded-lg border border-emerald-300/20 bg-emerald-400/10 px-3 py-2 text-sm text-emerald-200">
-                    <span className="font-semibold">Outcome:</span> {item.outcome}
-                  </p>
-                </div>
-              </article>
-            ))}
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              <a href="#contact" className="btn-primary next-step-btn-primary">
+                Start Building Autonomous HR
+              </a>
+              <a href="#demo" className="btn-secondary next-step-btn-secondary">
+                Try Interactive Demo
+              </a>
+            </div>
           </div>
         </section>
 
