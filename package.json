@@ -5,7 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:api": "node --env-file=.env server.mjs",
+    "dev:all": "node --env-file=.env server.mjs",
     "build": "vite build",
+    "build:full": "vite build",
+    "start": "node --env-file=.env server.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.app.json"
@@ -14,6 +18,7 @@
     "@react-three/drei": "^9.108.3",
     "@react-three/fiber": "^8.17.10",
     "@supabase/supabase-js": "^2.57.4",
+    "express": "^5.2.1",
     "framer-motion": "^12.35.1",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",

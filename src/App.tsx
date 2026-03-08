@@ -182,20 +182,6 @@ const directors = [
   },
 ];
 
-function generateAgentResponse(challenge: string) {
-  const query = challenge.toLowerCase();
-  if (query.includes('attrition')) {
-    return 'Attrition pattern detected in L4-L5 roles. Top drivers: manager-change frequency, compensation lag, and high overtime variance. Recommended: 30-day retention sprint with targeted manager coaching and role-level compensation review.';
-  }
-  if (query.includes('onboarding')) {
-    return 'Onboarding analysis complete. Drop-off is highest after week 2 in engineering hires. Recommended: milestone nudges, manager check-ins on day 10, and a guided first-project workflow to reduce ramp-up friction.';
-  }
-  if (query.includes('burnout') || query.includes('engagement')) {
-    return 'Burnout risk clusters identified in support and operations teams. Correlated signals include after-hours load and low recognition frequency. Recommended: workload balancing, manager nudge cadence, and targeted wellbeing interventions.';
-  }
-  return 'Challenge mapped successfully. Dattamsha Agent generated a cross-system workforce plan with risk segmentation, KPI baselines, and AI nudges for managers and HRBPs.';
-}
-
 function useCountUp(target: number, duration = 1200) {
   const [value, setValue] = useState(0);
 
@@ -267,29 +253,68 @@ function App() {
   const impactOps = useTriggeredCountUp(50, startImpactCount, 1150);
   const impactCompliance = useTriggeredCountUp(100, startImpactCount, 1450);
 
-  const runCommand = (input: string) => {
+  const runCommand = async (input: string) => {
     const trimmed = input.trim();
     if (!trimmed || isStreaming) return;
 
     setCommand('');
     setLog((prev) => [...prev, `admin@dattamsha:~$ ${trimmed}`, 'Running autonomous HR workflow...']);
-
-    const finalResponse = generateAgentResponse(trimmed);
     setIsStreaming(true);
-    setStreamingText('');
+    setStreamingText('Analyzing workforce signals...');
 
-    let index = 0;
-    const timer = window.setInterval(() => {
-      index += 3;
-      if (index >= finalResponse.length) {
-        window.clearInterval(timer);
-        setStreamingText('');
-        setIsStreaming(false);
-        setLog((prev) => [...prev, finalResponse, '']);
-        return;
+    try {
+      const response = await fetch('/api/agent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: trimmed }),
+      });
+
+      const raw = await response.text();
+      let data: { response?: string; error?: string } | null = null;
+      if (raw) {
+        try {
+          data = JSON.parse(raw) as { response?: string; error?: string };
+        } catch {
+          data = null;
+        }
       }
-      setStreamingText(finalResponse.slice(0, index));
-    }, 18);
+
+      if (!response.ok) {
+        throw new Error(
+          data?.error ||
+            `AI service request failed (${response.status}). Ensure backend server is running on /api/agent.`,
+        );
+      }
+
+      if (!data) {
+        throw new Error('AI service returned an empty response. Please retry.');
+      }
+
+      const finalResponse =
+        typeof data.response === 'string' && data.response.trim()
+          ? data.response.trim()
+          : 'Agent response was empty.';
+
+      setStreamingText('');
+
+      let index = 0;
+      const timer = window.setInterval(() => {
+        index += 3;
+        if (index >= finalResponse.length) {
+          window.clearInterval(timer);
+          setStreamingText('');
+          setIsStreaming(false);
+          setLog((prev) => [...prev, finalResponse, '']);
+          return;
+        }
+        setStreamingText(finalResponse.slice(0, index));
+      }, 18);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unexpected error while running AI agent.';
+      setIsStreaming(false);
+      setStreamingText('');
+      setLog((prev) => [...prev, `Error: ${message}`, '']);
+    }
   };
 
   const handleDemoSubmit = (event: FormEvent) => {
@@ -890,19 +915,60 @@ function App() {
         </section>
 
         <section className="section-block reveal-section">
-          <div className="section-frame next-step-shell rounded-[30px] border border-cyan-300/25 bg-cyan-400/10 text-center">
-            <p className="section-kicker">Next Step</p>
-            <h2 className="section-title next-step-title">Start Building Autonomous HR.</h2>
-            <p className="section-copy mx-auto max-w-3xl">
-              Move from fragmented systems and manual reporting to an AI-native workforce intelligence platform.
-            </p>
-            <div className="mt-6 flex flex-wrap justify-center gap-3">
-              <a href="#contact" className="btn-primary next-step-btn-primary">
-                Start Building Autonomous HR
-              </a>
-              <a href="#demo" className="btn-secondary next-step-btn-secondary">
-                Try Interactive Demo
-              </a>
+          <div className="section-frame next-step-shell rounded-[30px] border border-cyan-300/25 bg-cyan-400/10">
+            <div className="next-step-layout">
+              <motion.div
+                className="next-step-main"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.35 }}
+                transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <p className="section-kicker">Next Step</p>
+                <h2 className="section-title next-step-title">Start Building Autonomous HR.</h2>
+                <p className="section-copy max-w-2xl">
+                  Turn fragmented HR operations into one intelligent system that continuously analyzes,
+                  recommends, and drives action.
+                </p>
+                <div className="mt-5 flex flex-wrap gap-2">
+                  <motion.span className="next-step-chip" whileInView={{ scale: [0.96, 1] }} transition={{ duration: 0.4 }}>
+                    30-min strategy call
+                  </motion.span>
+                  <motion.span
+                    className="next-step-chip"
+                    whileInView={{ scale: [0.96, 1] }}
+                    transition={{ duration: 0.4, delay: 0.08 }}
+                  >
+                    Custom workforce blueprint
+                  </motion.span>
+                  <motion.span
+                    className="next-step-chip"
+                    whileInView={{ scale: [0.96, 1] }}
+                    transition={{ duration: 0.4, delay: 0.16 }}
+                  >
+                    Pilot-ready in weeks
+                  </motion.span>
+                </div>
+              </motion.div>
+              <motion.div
+                className="next-step-cta"
+                initial={{ opacity: 0, y: 24, scale: 0.98 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                viewport={{ once: true, amount: 0.32 }}
+                transition={{ type: 'spring', stiffness: 130, damping: 16 }}
+              >
+                <p className="text-sm text-slate-300">
+                  Speak with Dattamsha team and map your first autonomous HR use case.
+                </p>
+                <div className="mt-5 flex items-center gap-3 next-step-actions">
+                  <a href="#contact" className="btn-primary next-step-btn-primary">
+                    Start Building Autonomous HR <ArrowRight size={16} />
+                  </a>
+                  <a href="#demo" className="btn-secondary next-step-btn-secondary">
+                    Try Interactive Demo
+                  </a>
+                </div>
+              </motion.div>
             </div>
           </div>
         </section>
