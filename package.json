@@ -15,14 +15,19 @@
     "typecheck": "tsc --noEmit -p tsconfig.app.json"
   },
   "dependencies": {
+    "@radix-ui/react-slot": "^1.2.4",
     "@react-three/drei": "^9.108.3",
     "@react-three/fiber": "^8.17.10",
     "@supabase/supabase-js": "^2.57.4",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "cobe": "^0.6.5",
     "express": "^5.2.1",
     "framer-motion": "^12.35.1",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "tailwind-merge": "^3.5.0",
     "three": "^0.183.2"
   },
   "devDependencies": {

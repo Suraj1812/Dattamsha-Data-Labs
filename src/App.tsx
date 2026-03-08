@@ -21,6 +21,8 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import ThreeBackground from './components/ThreeBackground';
+import { ShapeLandingBackground } from '@/components/ui/shape-landing-hero';
+import { Globe } from '@/components/ui/globe';
 
 const navLinks = [
   { label: 'Overview', href: '#overview' },
@@ -539,6 +541,12 @@ function App() {
   return (
     <div className="site-shell text-slate-100">
       <ThreeBackground />
+      <ShapeLandingBackground className="fixed inset-0 z-[-3] opacity-65" />
+      <div className="pointer-events-none fixed inset-0 z-[-2] flex items-center justify-center opacity-45">
+        <div className="relative h-[420px] w-[420px] sm:h-[500px] sm:w-[500px] lg:h-[620px] lg:w-[620px]">
+          <Globe className="inset-0 !max-w-none" />
+        </div>
+      </div>
       <div className="ambient-glow" />
       <div className="scroll-progress-track">
         <div className="scroll-progress-bar" style={{ width: `${scrollProgress}%` }} />
@@ -602,8 +610,8 @@ function App() {
       </header>
 
       <main className="mx-auto w-full max-w-[92rem] px-4 pb-8 pt-28 sm:px-6 sm:pb-10 sm:pt-32 lg:px-10 lg:pt-36">
-        <section id="overview" className="reveal-section grid gap-14 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
-          <div>
+        <section id="overview" className="reveal-section relative overflow-hidden grid gap-14 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
+          <div className="relative z-10">
             <p className="section-kicker">Autonomous Workforce Intelligence</p>
             <h1 className="hero-title">Building Autonomous HR Systems with AI & Data.</h1>
             <p className="section-copy max-w-2xl">
@@ -635,7 +643,7 @@ function App() {
             </div>
           </div>
 
-          <div className="hero-3d-panel float-gentle section-frame rounded-[26px] border border-white/15 bg-slate-900/70">
+          <div className="relative z-10 hero-3d-panel float-gentle section-frame rounded-[26px] border border-white/15 bg-slate-900/70">
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
               <div className="kpi-box">
                 <p className="metric-number text-3xl font-semibold text-white">{coverage}%</p>
@@ -658,7 +666,7 @@ function App() {
             </div>
           </div>
 
-          <div ref={impactRef} className="lg:col-span-2">
+          <div ref={impactRef} className="relative z-10 lg:col-span-2">
             <div className="section-frame rounded-[24px] border border-white/15 bg-slate-900/55">
               <div className="flex items-end justify-between gap-3">
                 <p className="section-kicker !mb-0">Impact Metrics</p>
