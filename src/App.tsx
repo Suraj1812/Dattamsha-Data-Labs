@@ -917,19 +917,21 @@ function App() {
 
               <form
                 onSubmit={handleDemoSubmit}
-                className="mt-6 flex items-center gap-3 border-t border-white/10 pt-5"
+                className="mt-6 flex flex-col gap-3 border-t border-white/10 pt-5 sm:flex-row sm:items-center"
               >
                 <span className="font-mono whitespace-nowrap text-cyan-300">admin@dattamsha:~$</span>
-                <input
-                  value={command}
-                  onChange={(event) => setCommand(event.target.value)}
-                  placeholder="Type command..."
-                  className="terminal-input min-w-0 w-full flex-1"
-                  disabled={isStreaming}
-                />
-                <button type="submit" className="terminal-send" disabled={isStreaming}>
-                  <ArrowRight size={16} />
-                </button>
+                <div className="flex w-full items-center gap-3 sm:flex-1">
+                  <input
+                    value={command}
+                    onChange={(event) => setCommand(event.target.value)}
+                    placeholder="Type command..."
+                    className="terminal-input min-w-0 w-full flex-1"
+                    disabled={isStreaming}
+                  />
+                  <button type="submit" className="terminal-send" disabled={isStreaming}>
+                    <ArrowRight size={16} />
+                  </button>
+                </div>
               </form>
 
               <div className="mt-5 flex flex-wrap gap-2">
