@@ -345,6 +345,11 @@ function App() {
         );
       }
 
+      const submittedAt = new Date().toLocaleString('en-IN', {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      });
+
       const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -353,10 +358,14 @@ function App() {
           template_id: emailJsTemplateId,
           user_id: emailJsPublicKey,
           template_params: {
+            name: trimmedName,
+            email: trimmedEmail,
             from_name: trimmedName,
             from_email: trimmedEmail,
             company: trimmedCompany || 'Not provided',
             message: trimmedMessage,
+            time: submittedAt,
+            subject: `New Contact Message from ${trimmedName}`,
             to_email: 'info@dataproducts.co.in',
           },
         }),
