@@ -1018,10 +1018,20 @@
     background: rgba(var(--accent-rgb), 0.24);
   }
 
+  .contact-submit:disabled {
+    opacity: 0.75;
+    cursor: not-allowed;
+    transform: none;
+  }
+
   .contact-status {
     margin-top: 0.15rem;
     color: #93f5cb;
     font-size: 0.8rem;
+  }
+
+  .contact-status-error {
+    color: #fca5a5;
   }
 
   .footer-copy {

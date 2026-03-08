@@ -220,6 +220,10 @@ function useTriggeredCountUp(target: number, start: boolean, duration = 1200) {
 }
 
 function App() {
+  const emailJsServiceId = import.meta.env.VITE_EMAILJS_SERVICE_ID as string | undefined;
+  const emailJsTemplateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID as string | undefined;
+  const emailJsPublicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY as string | undefined;
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [navCondensed, setNavCondensed] = useState(false);
   const [activeSection, setActiveSection] = useState('overview');
@@ -242,7 +246,8 @@ function App() {
   const [contactEmail, setContactEmail] = useState('');
   const [contactCompany, setContactCompany] = useState('');
   const [contactMessage, setContactMessage] = useState('');
-  const [contactStatus, setContactStatus] = useState<'idle' | 'sent'>('idle');
+  const [contactStatus, setContactStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [contactError, setContactError] = useState('');
 
   const coverage = useCountUp(94, 1300);
   const signals = useCountUp(320, 1500);
@@ -322,7 +327,7 @@ function App() {
     runCommand(command);
   };
 
-  const handleContactSubmit = (event: FormEvent) => {
+  const handleContactSubmit = async (event: FormEvent) => {
     event.preventDefault();
     const trimmedName = contactName.trim();
     const trimmedEmail = contactEmail.trim();
@@ -330,18 +335,50 @@ function App() {
     const trimmedMessage = contactMessage.trim();
     if (!trimmedName || !trimmedEmail || !trimmedMessage) return;
 
-    const subject = `New inquiry from ${trimmedName}`;
-    const body = [
-      `Name: ${trimmedName}`,
-      `Email: ${trimmedEmail}`,
-      `Company: ${trimmedCompany || 'Not provided'}`,
-      '',
-      'Message:',
-      trimmedMessage,
-    ].join('\n');
+    setContactStatus('sending');
+    setContactError('');
 
-    window.location.href = `mailto:info@dataproducts.co.in?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    setContactStatus('sent');
+    try {
+      if (!emailJsServiceId || !emailJsTemplateId || !emailJsPublicKey) {
+        throw new Error(
+          'Email service is not configured. Please set VITE_EMAILJS_SERVICE_ID, VITE_EMAILJS_TEMPLATE_ID, and VITE_EMAILJS_PUBLIC_KEY.',
+        );
+      }
+
+      const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          service_id: emailJsServiceId,
+          template_id: emailJsTemplateId,
+          user_id: emailJsPublicKey,
+          template_params: {
+            from_name: trimmedName,
+            from_email: trimmedEmail,
+            company: trimmedCompany || 'Not provided',
+            message: trimmedMessage,
+            to_email: 'info@dataproducts.co.in',
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        const details = await response.text();
+        throw new Error(details || `Unable to send message (${response.status}).`);
+      }
+
+      setContactStatus('sent');
+      setContactName('');
+      setContactEmail('');
+      setContactCompany('');
+      setContactMessage('');
+      return;
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Unable to send message right now. Please try again.';
+      setContactStatus('error');
+      setContactError(message);
+    }
   };
 
   const handleNavClick = () => {
@@ -1059,11 +1096,15 @@ function App() {
                     value={contactName}
                     onChange={(event) => {
                       setContactName(event.target.value);
-                      if (contactStatus === 'sent') setContactStatus('idle');
+                      if (contactStatus === 'sent' || contactStatus === 'error') {
+                        setContactStatus('idle');
+                        setContactError('');
+                      }
                     }}
                     className="contact-input"
                     placeholder="Your name"
                     required
+                    disabled={contactStatus === 'sending'}
                   />
                 </label>
                 <label className="contact-label">
@@ -1073,11 +1114,15 @@ function App() {
                     value={contactEmail}
                     onChange={(event) => {
                       setContactEmail(event.target.value);
-                      if (contactStatus === 'sent') setContactStatus('idle');
+                      if (contactStatus === 'sent' || contactStatus === 'error') {
+                        setContactStatus('idle');
+                        setContactError('');
+                      }
                     }}
                     className="contact-input"
                     placeholder="you@company.com"
                     required
+                    disabled={contactStatus === 'sending'}
                   />
                 </label>
                 <label className="contact-label">
@@ -1086,10 +1131,14 @@ function App() {
                     value={contactCompany}
                     onChange={(event) => {
                       setContactCompany(event.target.value);
-                      if (contactStatus === 'sent') setContactStatus('idle');
+                      if (contactStatus === 'sent' || contactStatus === 'error') {
+                        setContactStatus('idle');
+                        setContactError('');
+                      }
                     }}
                     className="contact-input"
                     placeholder="Company name"
+                    disabled={contactStatus === 'sending'}
                   />
                 </label>
                 <label className="contact-label">
@@ -1098,19 +1147,26 @@ function App() {
                     value={contactMessage}
                     onChange={(event) => {
                       setContactMessage(event.target.value);
-                      if (contactStatus === 'sent') setContactStatus('idle');
+                      if (contactStatus === 'sent' || contactStatus === 'error') {
+                        setContactStatus('idle');
+                        setContactError('');
+                      }
                     }}
                     className="contact-textarea"
                     rows={4}
                     placeholder="Tell us your HR analytics or AI challenge..."
                     required
+                    disabled={contactStatus === 'sending'}
                   />
                 </label>
-                <button type="submit" className="contact-submit">
-                  Send Message <ArrowRight size={16} />
+                <button type="submit" className="contact-submit" disabled={contactStatus === 'sending'}>
+                  {contactStatus === 'sending' ? 'Sending...' : 'Send Message'} <ArrowRight size={16} />
                 </button>
                 {contactStatus === 'sent' && (
-                  <p className="contact-status">Email draft opened. Your message is ready to send.</p>
+                  <p className="contact-status">Message sent successfully. Our team will contact you soon.</p>
+                )}
+                {contactStatus === 'error' && (
+                  <p className="contact-status contact-status-error">{contactError}</p>
                 )}
               </form>
             </div>

@@ -16,6 +16,9 @@ const configuredModels = (process.env.GEMINI_MODELS || process.env.GEMINI_MODEL 
   .split(',')
   .map((m) => m.trim())
   .filter(Boolean);
+const CONTACT_TO_EMAIL = process.env.CONTACT_TO_EMAIL || 'info@dataproducts.co.in';
+const CONTACT_FROM_EMAIL = process.env.CONTACT_FROM_EMAIL || 'onboarding@resend.dev';
+const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -38,6 +41,86 @@ function cleanMarkdown(text) {
     .replace(/^[\s>*#-]+/gm, '')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
+}
+
+function sanitize(value, max = 2000) {
+  return String(value || '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .slice(0, max);
+}
+
+function validateContactPayload(body) {
+  const name = sanitize(body?.name, 120);
+  const email = sanitize(body?.email, 180);
+  const company = sanitize(body?.company, 180);
+  const message = sanitize(body?.message, 4000);
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!name || !email || !message) {
+    return { error: 'Name, email, and message are required.' };
+  }
+
+  if (!emailPattern.test(email)) {
+    return { error: 'Please enter a valid email address.' };
+  }
+
+  return { name, email, company, message };
+}
+
+async function sendContactMessage(payload) {
+  const { name, email, company, message } = payload;
+  const companyText = company || 'Not provided';
+  const subject = `New website inquiry from ${name}`;
+  const text = [
+    'New contact form submission',
+    '',
+    `Name: ${name}`,
+    `Email: ${email}`,
+    `Company: ${companyText}`,
+    '',
+    'Message:',
+    message,
+  ].join('\n');
+
+  const html = `
+    <h2>New contact form submission</h2>
+    <p><strong>Name:</strong> ${name}</p>
+    <p><strong>Email:</strong> ${email}</p>
+    <p><strong>Company:</strong> ${companyText}</p>
+    <p><strong>Message:</strong></p>
+    <p>${message.replace(/\n/g, '<br/>')}</p>
+  `;
+
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: CONTACT_FROM_EMAIL,
+      to: [CONTACT_TO_EMAIL],
+      reply_to: email,
+      subject,
+      text,
+      html,
+    }),
+  });
+
+  let body = null;
+  try {
+    body = await response.json();
+  } catch {
+    body = null;
+  }
+
+  if (!response.ok) {
+    const message = body?.message || body?.error || `Resend API HTTP ${response.status}`;
+    const error = new Error(message);
+    error.status = response.status;
+    throw error;
+  }
 }
 
 function formatAgentResponse(rawText) {
@@ -174,6 +257,26 @@ app.post('/api/agent', async (req, res) => {
     return res.json({ response, model });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unexpected server error.';
+    const status = error?.status || 500;
+    return res.status(status).json({ error: message });
+  }
+});
+
+app.post('/api/contact', async (req, res) => {
+  try {
+    if (!RESEND_API_KEY) {
+      return res.status(500).json({ error: 'RESEND_API_KEY is not configured on the server.' });
+    }
+
+    const payload = validateContactPayload(req.body);
+    if ('error' in payload) {
+      return res.status(400).json({ error: payload.error });
+    }
+
+    await sendContactMessage(payload);
+    return res.json({ ok: true });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unable to send message right now.';
     const status = error?.status || 500;
     return res.status(status).json({ error: message });
   }
